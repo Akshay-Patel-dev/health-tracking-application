@@ -49,13 +49,13 @@ The application will be available at http://localhost:4200.
 
 Unit tests are written for one component and one service with 100% code coverage.
 
+
 =============================== Coverage summary ===============================
 Statements   : 65.45% ( 72/110 )
 Branches     : 20.83% ( 5/24 )
 Functions    : 67.56% ( 25/37 )
 Lines        : 65% ( 65/100 )
-================================================================================
-
+==================================complete=====================================
 
 ## Deployment 
 
