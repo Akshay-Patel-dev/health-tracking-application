@@ -1,82 +1,131 @@
-// src/app/components/user-form/user-form.component.spec.ts
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserFormComponent } from './user-form.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
+import { FormControl, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { merge } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import { of } from 'rxjs';
+import { User } from '../../models/user';
 
-describe('UserFormComponent', () => {
-  let component: UserFormComponent;
-  let fixture: ComponentFixture<UserFormComponent>;
-  let userService: jasmine.SpyObj<UserService>;
-  let router: jasmine.SpyObj<Router>;
+@Component({
+  selector: 'app-user-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule
+  ],
+  templateUrl: './user-form.component.html',
+  styleUrls: ['./user-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class UserFormComponent {
+  workoutTypes: string[] = ['Yoga', 'Running', 'Lifting', 'Pilates'];
+  selectedType: string = 'Running';
+  showSuccessMessage = false;
+  submitted = false;
 
-  beforeEach(async () => {
-    const userServiceSpy = jasmine.createSpyObj('UserService', ['getUsers', 'addUser', 'updateUser']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigateByUrl']);
+  readonly minutes = new FormControl('', [
+    Validators.required,
+    Validators.min(1),
+    Validators.max(120),
+    Validators.pattern('^[0-9]*$')
+  ]);
 
-    await TestBed.configureTestingModule({
-      imports: [
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        UserFormComponent
-      ],
-      providers: [
-        { provide: UserService, useValue: userServiceSpy },
-        { provide: Router, useValue: routerSpy }
-      ]
-    })
-    .compileComponents();
+  readonly name = new FormControl('', [
+    Validators.required,
+    Validators.minLength(4),
+    Validators.pattern('^[a-zA-Z ]*$')
+  ]);
 
-    fixture = TestBed.createComponent(UserFormComponent);
-    component = fixture.componentInstance;
-    userService = TestBed.inject(UserService) as jasmine.SpyObj<UserService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+  readonly type = new FormControl('', [Validators.required]);
 
-    fixture.detectChanges();
-  });
+  minutesError = signal('');
+  nameError = signal('');
+  typeError = signal('');
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  constructor(
+    private userService: UserService,
+    private changeDetector: ChangeDetectorRef,
+    private router: Router
+  ) {
+    merge(
+      this.minutes.statusChanges, this.minutes.valueChanges,
+      this.type.statusChanges, this.type.valueChanges,
+      this.name.statusChanges, this.name.valueChanges
+    )
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.updateErrorMessages());
+  }
 
-  it('should submit valid form', () => {
-    component.name.setValue('John Doe');
-    component.type.setValue('Yoga');
-    component.minutes.setValue('60');  // Set as string
+  onWorkoutTypeChange(type: string) {
+    this.selectedType = type;
+  }
 
-    const mockUser = {
-      id: 1,
-      name: 'John Doe',
-      workouts: [{ type: 'Yoga', minutes: 60 }]
-    };
+  updateErrorMessages() {
+    this.minutesError.set(this.getControlErrorMessage(this.minutes, 'Minutes'));
+    this.nameError.set(this.getControlErrorMessage(this.name, 'Name'));
+    this.typeError.set(this.getControlErrorMessage(this.type, 'Workout type'));
+  }
 
-    userService.getUsers.and.returnValue([mockUser]);
-    userService.addUser.and.returnValue();  // If `addUser` returns void
-    userService.updateUser.and.returnValue();  // If `updateUser` returns void
+  getControlErrorMessage(control: FormControl, fieldName: string): string {
+    if (control.invalid) {
+      if (control.hasError('required')) {
+        return `${fieldName} is required.`;
+      } else if (control.hasError('pattern')) {
+        return `${fieldName} must be valid.`;
+      } else if (control.hasError('min') || control.hasError('max')) {
+        return `${fieldName} must be within the valid range.`;
+      } else if (control.hasError('minlength')) {
+        return `${fieldName} must be at least the minimum length.`;
+      }
+    }
+    return '';
+  }
 
-    component.onSubmit();
+  onSubmit() {
+    if (this.formIsValid()) {
+      const existingUser = this.userService.getUsers().find(user => user.name === this.name.value);
 
-    expect(userService.addUser).toHaveBeenCalled();
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/users');
-  });
+      if (existingUser) {
+        existingUser.workouts.push({
+          type: this.type.value as string,
+          minutes: Number(this.minutes.value)
+        });
+        this.userService.updateUser(existingUser);
+        console.log('Existing user updated with new workout:', existingUser);
+      } else {
+        const newId = this.userService.getUsers().length > 0 ? 
+          Math.max(...this.userService.getUsers().map(user => user.id)) + 1 : 1;
+        const newUser: User = {
+          id: newId,
+          name: this.name.value as string,
+          workouts: [
+            {
+              type: this.type.value as string,
+              minutes: Number(this.minutes.value)
+            }
+          ]
+        };
+        this.userService.addUser(newUser);
+        this.showSuccessMessage = true;
+        this.submitted = true;
+        this.router.navigateByUrl('/users');
+      }
+    } else {
+      this.updateErrorMessages();
+    }
+  }
 
-  it('should display error messages on invalid form submission', () => {
-    // Set invalid form values
-    component.name.setValue('');
-    component.type.setValue('');
-    component.minutes.setValue('');  // Set as string
-
-    component.onSubmit();
-
-    expect(component.nameError()).toBe('Name is required.');
-    expect(component.typeError()).toBe('Workout type is required.');
-    expect(component.minutesError()).toBe('Minutes are required.');
-  });
-});
+  formIsValid(): boolean {
+    return this.name.valid && this.type.valid && this.minutes.valid;
+  }
+}
