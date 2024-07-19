@@ -9,7 +9,7 @@ This Angular application allows users to track their health and workout activiti
 - [Usage](#usage)
 - [Running Tests](#running-tests)
 - [Deployment](#deployment)
-- [File Structure](#file-structure)
+
 
 ## Features
 - Add and update user workout details.
@@ -61,7 +61,7 @@ Lines        : 65% ( 65/100 )
 
 project is live in https://health-tracking-appl-git-51fb4d-akshay-patels-projects-4a84c78d.vercel.app/
 
-## File Structure
+
 
 health-challenge-tracker/
 ├── src/
