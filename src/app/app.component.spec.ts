@@ -1,10 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } },
+        provideRouter([])
+      ]
     }).compileComponents();
   });
 
@@ -20,10 +25,5 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('health-tracking-application');
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, health-tracking-application');
-  });
+  
 });

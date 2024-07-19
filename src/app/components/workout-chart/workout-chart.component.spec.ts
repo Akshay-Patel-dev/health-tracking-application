@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { WorkoutChartComponent } from './workout-chart.component';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 describe('WorkoutChartComponent', () => {
   let component: WorkoutChartComponent;
@@ -8,7 +9,11 @@ describe('WorkoutChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WorkoutChartComponent]
+      imports: [WorkoutChartComponent],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } },
+        provideRouter([])
+      ]
     })
     .compileComponents();
     

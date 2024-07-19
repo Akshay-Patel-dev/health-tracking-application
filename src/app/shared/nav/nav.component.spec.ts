@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavComponent } from './nav.component';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 describe('NavComponent', () => {
   let component: NavComponent;
@@ -8,7 +9,11 @@ describe('NavComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavComponent]
+      imports: [NavComponent],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } },
+        provideRouter([])
+      ]
     })
     .compileComponents();
     
