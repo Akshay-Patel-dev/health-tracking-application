@@ -62,30 +62,6 @@ Lines        : 65% ( 65/100 )
 project is live in https://health-tracking-appl-git-51fb4d-akshay-patels-projects-4a84c78d.vercel.app/
 
 
-
-health-challenge-tracker/
-├── src/
-│   ├── app/
-│   │   ├── components/
-│   │   │   ├── user-form/
-│   │   │   │   ├── user-form.component.ts
-│   │   │   │   ├── user-form.component.html
-│   │   │   │   ├── user-form.component.css
-│   │   │   ├── user-list/
-│   │   │   │   ├── user-list.component.ts
-│   │   │   │   ├── user-list.component.html
-│   │   │   │   ├── user-list.component.css
-│   │   ├── services/
-│   │   │   ├── user.service.ts
-│   │   ├── models/
-│   │   │   ├── user.ts
-│   ├── assets/
-│   ├
-│   ├── styles.css
-├── angular.json
-├── package.json
-├── README.md
-
 ## Contribuation
 
  Contributions are welcome! Feel free to open an issue or submit a pull request to improve the application.
