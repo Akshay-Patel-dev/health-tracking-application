@@ -30,6 +30,22 @@ export class UserService {
         { type: 'Cycling', minutes: 40 }
       ]
     },
+    {
+      id: 4,
+      name: 'Mikdsflje Johnson',
+      workouts: [
+        { type: 'Running', minutes: 50 },
+        { type: 'Cycling', minutes: 40 }
+      ]
+    },
+    {
+      id: 5,
+      name: 'ushan Johnson',
+      workouts: [
+        { type: 'Swimming', minutes: 50 },
+        { type: 'Cycling', minutes: 40 }
+      ]
+    },
   ]
   constructor() { }
 
